@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 import { postgraphile } from "postgraphile";
 import express from "express";
 import cors from "cors";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./auth";
 
 // Because this is file is a typescript file (.ts) to properly run express.js
 // and the imports, the following changes had to be made to
@@ -40,6 +42,9 @@ app.use(
   }),
 );
 
+app.all("/api/auth/*splat", toNodeHandler(auth));
+
+// postgraphile: run before express.json() and after betterauth
 app.use(
   postgraphile(DATABASE_URL, "public", {
     watchPg: true,
