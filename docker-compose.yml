@@ -12,6 +12,11 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+  migrate:
+    build: ./migrations
+    depends_on:
+      db:
+        condition: service_healthy
   app:
     build: ./node
     container_name: express-server
@@ -24,5 +29,5 @@ services:
       - BETTER_AUTH_URL=${BETTER_AUTH_URL}
     restart: always
     depends_on:
-      db:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully

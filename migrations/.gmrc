@@ -1,6 +1,6 @@
 {
   "connectionString": "postgres://myapp:myapp@localhost:5433/myapp",
-  "shadowConnectionString": "postgres://myapp:myapp@localhost:5433/myapp_shadow",
+  "shadowConnectionString": "postgres://myapp:localhost@db:5433/myapp_shadow",
   "rootConnectionString": "postgres://myapp:myapp@localhost:5433/postgres",
   "afterReset": [],
   "afterAllMigrations": [],
