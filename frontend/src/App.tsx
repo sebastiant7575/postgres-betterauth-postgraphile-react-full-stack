@@ -1,6 +1,4 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import "./App.css";
 import { authClient } from "./lib/auth-client";
 
@@ -8,7 +6,6 @@ function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [isSuccess, setIsSuccess] = useState("");
   const [isLogin, setIsLogin] = useState(true);
   const [message, setMessage] = useState("");
 
@@ -23,10 +20,10 @@ function App() {
         name, // user display name
       },
       {
-        onRequest: (ctx) => {
+        onRequest: (/*ctx*/) => {
           //show loading
         },
-        onSuccess: (ctx) => {
+        onSuccess: (/*ctx*/) => {
           //redirect to the dashboard or sign in page
           setMessage("Signed up successfully!");
         },
@@ -81,9 +78,7 @@ function App() {
           }}
         >
           <h1>{isLogin ? "Sign In" : "Sign Up"}</h1>
-          {isSuccess && <p>Sign Up Successful</p>}
           {message && <p style={{ color: "red" }}>{message}</p>}
-
           {!isLogin && (
             <div
               style={{
