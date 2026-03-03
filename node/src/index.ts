@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { postgraphile } from "postgraphile";
 import express from "express";
 import cors from "cors";
-import { toNodeHandler } from "better-auth/node";
+import { fromNodeHeaders, toNodeHandler } from "better-auth/node";
 import { auth } from "./auth";
 
 // Because this is file is a typescript file (.ts) to properly run express.js
@@ -34,7 +34,7 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 const DATABASE_URL =
   process.env.DATABASE_URL || "postgres://myapp:myapp@localhost:5433/myapp";
-console.log("Connecting to:", DATABASE_URL);
+
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -51,6 +51,25 @@ app.use(
     graphiql: true,
     enhanceGraphiql: true,
     dynamicJson: true,
+    pgSettings: async (req: Request) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(req.headers),
+        });
+
+        if (session?.user) {
+          return {
+            role: "app_authenticated",
+            "jwt.claims.user_id": session.user.id,
+          };
+        }
+      } catch (e) {
+        // No valid session
+      }
+      return {
+        role: "app_anonymous",
+      };
+    },
   }),
 );
 
