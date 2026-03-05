@@ -6,7 +6,7 @@ const DATABASE_URL =
 
 export const auth = betterAuth({
   database: new Pool({
-    connectionString: DATABASE_URL,
+    connectionString: DATABASE_URL + "?options=-c search_path=auth",
   }),
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:4000",
   secret: process.env.BETTER_AUTH_SECRET,
