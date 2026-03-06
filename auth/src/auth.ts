@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { jwt } from "better-auth/plugins";
 import { Pool } from "pg";
 
 const DATABASE_URL =
@@ -14,4 +15,5 @@ export const auth = betterAuth({
     enabled: true,
   },
   trustedOrigins: ["http://localhost:5173"],
+  plugins: [jwt()],
 });
