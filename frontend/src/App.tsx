@@ -54,12 +54,20 @@ function App() {
     setMessage("Signed out.");
   };
 
+  const handleGetToken = async () => {
+    const { data } = await authClient.token();
+    console.log("JWT Token:", data?.token);
+    setMessage(data?.token || "No token");
+  };
+
   if (session.data) {
     return (
       <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
         <h1>Welcome, {session.data.user.name}</h1>
         <p>Email: {session.data.user.email}</p>
+        <p>{message}</p>
         <button onClick={handleSignOut}>Sign Out</button>
+        <button onClick={handleGetToken}>Get JWT Token</button>
       </div>
     );
   }
@@ -139,6 +147,7 @@ function App() {
             ></input>
           </div>
           <button type="submit">{isLogin ? "Sign In" : "Sign Up"}</button>
+          <button onClick={handleGetToken}>Get JWT Token</button>
           <p>
             <a
               href="#"
