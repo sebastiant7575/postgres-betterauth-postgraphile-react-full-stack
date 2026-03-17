@@ -53,7 +53,6 @@ function App() {
   return (
     <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h1>{isLogin ? "Sign In" : "Sign Up"}</h1>
-
       {!isLogin && (
         <div>
           <label>Name</label>
@@ -65,7 +64,6 @@ function App() {
           />
         </div>
       )}
-
       <div>
         <label>Email</label>
         <br />
@@ -75,7 +73,6 @@ function App() {
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
-
       <div>
         <label>Password</label>
         <br />
@@ -85,14 +82,11 @@ function App() {
           onChange={(e) => setPassword(e.target.value)}
         />
       </div>
-
       <br />
       <button onClick={isLogin ? handleSignIn : handleSignUp}>
         {isLogin ? "Sign In" : "Sign Up"}
       </button>
-
       <p>{message}</p>
-
       <p>
         <a
           href="#"
