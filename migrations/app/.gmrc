@@ -1,0 +1,8 @@
+{
+  "connectionString": "postgres://myapp:myapp@localhost:5434/myapp_data",
+  "shadowConnectionString": "postgres://myapp:myapp@localhost:5434/myapp_data_shadow",
+  "rootConnectionString": "postgres://myapp:myapp@localhost:5434/postgres",
+  "afterReset": [],
+  "afterAllMigrations": [],
+  "blankMigrationContent": "-- Enter your migration here\n"
+}
