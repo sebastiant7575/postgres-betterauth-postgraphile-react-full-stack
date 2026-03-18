@@ -1,25 +1,25 @@
-Full stack application using Docker to build the project. Hand built from scratch (mostly)
+Full Stack App using React (Vite) + Postgraphile/GraphQL (node) + BetterAuth (node) + 2 Postgres DBs
 
-Project Architecture:
+To run the project download docker and run:
 
-frontend (React + Vite) -> node.js middleware(postgraphile + betterauth) -> Postgres DB
+sudo docker compose up --build
 
-Vague outline:
+To stop the project and reset the database run:
 
-project/
-├── docker-compose.yml
-├── .env
-├── frontend/
-│ ├── Dockerfile
-│ ├── package.json
-│ ├── vite.config.ts
-│ └── src/
-├── node/
-│ ├── Dockerfile
-│ ├── package.json
-│ └── src/
-│ ├── index.ts
-│ ├── postgraphile.ts
-│ └── auth.ts
-└── db/
-└── init.sql # seed schema, roles, etc.
+sudo docker compose down -v
+
+This project runs a simple login/signup workflow, using Docker to
+orchestrate each service as its own container. BetterAuth can easily connect to
+any OAuth provider.
+
+Postgraphile and BetterAuth run on their own node containers using express.js
+
+There are 2 postgres databases that run, one for authentication and one for data
+Only an authenticated user can query the graphql data database. Checks are done
+via JWT. These DBs sync users via a lazy creation method upon first graphql
+query, whereby if an authenticated user is not present in the app data db, their
+user information is taken from the JWT.
+
+This project uses graphile-migrate to handle migrations. Committed migrations
+are run on every project re-build - the databases are wiped if the containers
+are destroyed.
