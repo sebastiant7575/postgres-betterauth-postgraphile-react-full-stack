@@ -3,17 +3,37 @@ import { postgraphile } from "postgraphile";
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import express from "express";
 import cors from "cors";
+import pg from "pg";
 
 const app = express();
 const PORT = process.env.PORT || 4001;
 const DATABASE_URL =
-  process.env.DATABASE_URL || "postgres://myapp:myapp@localhost:5433/myapp";
+  process.env.DATABASE_URL ||
+  "postgres://myapp:myapp@localhost:5434/myapp_data";
 const AUTH_JWKS_URL =
   process.env.AUTH_JWKS_URL || "http://localhost:4000/api/auth/jwks";
 const AUTH_ISSUER = process.env.AUTH_ISSUER || "http://localhost:4000";
 
-// Create JWKS keyset — fetched once and cached
+const pool = new pg.Pool({ connectionString: DATABASE_URL });
+
+// Create JWKS keyset - fetched once and cached
 const JWKS = createRemoteJWKSet(new URL(AUTH_JWKS_URL));
+
+async function ensureAppUser(userId: string, name: string | null) {
+  const result = await pool.query(
+    `SELECT id FROM app_user WHERE auth_user_id = $1`,
+    [userId],
+  );
+
+  if (result.rows.length === 0) {
+    await pool.query(
+      `INSERT INTO app_user (auth_user_id, display_name)
+       VALUES ($1, $2)
+       ON CONFLICT (auth_user_id) DO NOTHING`,
+      [userId, name],
+    );
+  }
+}
 
 app.use(
   cors({
@@ -39,13 +59,14 @@ app.use(
             audience: AUTH_ISSUER,
           });
           if (payload.sub) {
+            await ensureAppUser(payload.sub, (payload.name as string) || null);
             return {
               role: "app_authenticated",
               "jwt.claims.user_id": payload.sub,
             };
           }
         } catch (e) {
-          // Invalid token — fall through to anonymous
+          // Invalid token  fall through to anonymous
         }
       }
 

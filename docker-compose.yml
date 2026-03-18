@@ -1,43 +1,73 @@
 services:
-  db:
+  db-auth:
     build: ./db
     ports:
-      - "${POSTGRES_PORT:-5433}:5432"
+      - "5433:5432"
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_DB=myapp_auth
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d myapp_auth"]
       interval: 5s
       timeout: 3s
       retries: 5
-  migrate:
-    build: ./migrations
+
+  db-app:
+    build: ./db
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=myapp_data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d myapp_data"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  migrate-auth:
+    build: ./migrations/auth
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-auth:5432/myapp_auth
     depends_on:
-      db:
+      db-auth:
+        condition: service_healthy
+
+  migrate-app:
+    build: ./migrations/app
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-app:5432/myapp_data
+    depends_on:
+      db-app:
         condition: service_healthy
   auth:
     build: ./auth
     ports:
       - "4000:4000"
     environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-auth:5432/myapp_auth
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - BETTER_AUTH_URL=http://localhost:4000
     depends_on:
-      migrate:
+      migrate-auth:
         condition: service_completed_successfully
+
   graphql:
     build: ./graphql
     ports:
       - "4001:4001"
     environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-app:5432/myapp_data
       - AUTH_JWKS_URL=http://auth:4000/api/auth/jwks
       - AUTH_ISSUER=http://localhost:4000
     depends_on:
-      - auth
+      migrate-app:
+        condition: service_completed_successfully
+      auth:
+        condition: service_started
+
   frontend:
     build: ./frontend
     ports:
